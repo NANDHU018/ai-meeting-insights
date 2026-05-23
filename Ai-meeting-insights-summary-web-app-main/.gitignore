@@ -1,0 +1,63 @@
+# ── Virtual environments ──────────────────────────────────────────────────────
+.venv/
+venv/
+env/
+ENV/
+
+# ── Python ────────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+*.whl
+
+# ── Whisper/AI model weights (downloaded at runtime) ─────────────────────────
+AI_models/uploads/
+*.pt
+*.pth
+*.bin
+*.gguf
+
+# ── Uploaded audio/media files (user data, not source code) ──────────────────
+backend/uploads/
+*.wav
+*.mp3
+*.webm
+*.mp4
+*.ogg
+*.flac
+*.m4a
+
+# ── Node / Frontend ───────────────────────────────────────────────────────────
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+
+# ── Environment files (contain secrets) ──────────────────────────────────────
+.env
+.env.local
+.env.*
+
+# ── OS artifacts ──────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── IDE / editor ──────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*.suo
+*.user
+*.log
+
+# ── Gemini / AI tools ────────────────────────────────────────────────────────
+.gemini/

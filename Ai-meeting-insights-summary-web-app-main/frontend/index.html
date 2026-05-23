@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description"
+        content="AI Meeting Assistant — Record, transcribe, and summarize your meetings with AI." />
+    <title>AI Meeting Assistant — Dashboard</title>
+    <link rel="stylesheet" href="styles.css?v=6" />
+</head>
+
+<body>
+
+    <div class="bg-gradient"></div>
+
+    <!-- Navbar -->
+    <header class="navbar card"
+        style="display: flex; justify-content: space-between; align-items: center; padding: 12px 24px;">
+        <div style="font-weight: 800; font-size: 1.25rem; display: flex; align-items: center; gap: 10px;">
+            <span
+                style="background: var(--gradient-primary); padding: 4px 10px; border-radius: 8px; color: white;">M</span>
+            <span style="color: var(--text-primary);">MeetAI</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 20px;">
+            <span id="userGreeting" style="color: var(--text-muted); font-size: 0.95rem;"></span>
+            <button onclick="logout()" class="btn"
+                style="background: var(--gradient-primary); border: 1px solid var(--border); padding: 6px 16px; font-size: 0.9rem;">Sign
+                Out</button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container">
+
+        <!-- Hero -->
+        <div class="hero">
+            <h1>AI Meeting <span>Assistant</span></h1>
+            <p>Record meetings, generate transcripts &amp; summaries, and ask AI about past discussions.</p>
+
+            <!-- Upload Audio for Transcription -->
+            <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+                <label class="btn btn-primary" for="audioUpload" id="uploadLabel">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                    Upload Audio
+                </label>
+                <input type="file" id="audioUpload" accept="audio/*" multiple style="display:none;" />
+                <button class="btn btn-outline" id="recordBtn">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                        <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
+                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                        <line x1="12" y1="19" x2="12" y2="22"></line>
+                    </svg>
+                    Start Recording
+                </button>
+            </div>
+
+            <!-- Recording Indicator -->
+            <div class="recording-indicator" id="recordingIndicator">
+                <div class="recording-dot"></div>
+                <span>Recording in progress…</span>
+                <button class="btn btn-danger btn-sm" id="stopRecordBtn" style="margin-left:auto;">Stop</button>
+            </div>
+        </div>
+
+        <!-- Processing Status -->
+        <div id="processingStatus" class="text-center mb-4 hidden">
+            <div class="spinner"></div>
+            <span style="margin-left:12px; color:var(--text-secondary); font-weight:500;"
+                id="statusText">Processing…</span>
+        </div>
+
+        <!-- Recent Meetings -->
+        <div class="section-title"
+            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div style="display: flex; align-items: center; gap: 10px; font-weight: 600;">
+                <div class="icon">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+                </div>
+                Recent Meetings
+            </div>
+            <div id="bulkActions" class="hidden" style="display: flex; gap: 12px; align-items: center;">
+                <span id="selectedCount" style="font-size: 0.9rem; color: var(--text-muted); font-weight: normal;">0
+                    selected</span>
+                <button id="selectAllBtn" class="btn btn-sm"
+                    style="padding: 6px 14px; font-size: 0.85rem; background: rgba(255,255,255,0.07); border: 1px solid var(--border);">Select All</button>
+                <button id="bulkDeleteBtn" class="btn btn-danger btn-sm"
+                    style="padding: 6px 14px; font-size: 0.85rem;">Delete Selected</button>
+            </div>
+        </div>
+
+        <div id="meetingsGrid" class="meetings-grid">
+            <!-- Populated by JS -->
+        </div>
+
+        <div id="emptyState" class="empty-state hidden">
+            <div class="empty-icon">📂</div>
+            <h3>No meetings yet</h3>
+            <p>Upload an audio file or start a recording to see it here.</p>
+        </div>
+
+    </div>
+
+    <!-- Confirm Delete Modal -->
+    <div id="deleteModal" class="modal hidden">
+        <div class="modal-content card">
+            <h3 style="margin-top:0; color: white;">Delete Meeting?</h3>
+            <p style="color:var(--text-muted); margin-bottom: 24px; line-height: 1.5;">Are you sure you want to delete
+                this meeting? This action cannot be undone.</p>
+            <div class="modal-actions" style="display: flex; gap: 12px; justify-content: flex-end;">
+                <button id="cancelDeleteBtn" class="btn"
+                    style="background: rgba(255,255,255,0.05); border: 1px solid var(--border);">Cancel</button>
+                <button id="confirmDeleteBtn" class="btn btn-danger">Delete</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Toast -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="script.js?v=8"></script>
+    <script>
+        // Add mouse move listener for the meeting card hover glow effect
+        document.addEventListener('mousemove', e => {
+            document.querySelectorAll('.meeting-card').forEach(card => {
+                const rect = card.getBoundingClientRect(),
+                    x = e.clientX - rect.left,
+                    y = e.clientY - rect.top;
+                card.style.setProperty('--mouse-x', `${x}px`);
+                card.style.setProperty('--mouse-y', `${y}px`);
+            });
+        });
+    </script>
+</body>
+
+</html>

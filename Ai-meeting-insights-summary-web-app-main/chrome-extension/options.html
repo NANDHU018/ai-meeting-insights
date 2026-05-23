@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Microphone Permission</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: #0f172a;
+      color: #f8fafc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      text-align: center;
+    }
+    .card {
+      background: #1e293b;
+      padding: 40px;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      border: 1px solid rgba(255,255,255,0.1);
+      max-width: 400px;
+    }
+    h2 { margin-top: 0; color: #818cf8; }
+    p { color: #cbd5e1; line-height: 1.5; margin-bottom: 24px; }
+    button {
+      background: linear-gradient(135deg, #818cf8, #c084fc);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    button:hover { opacity: 0.9; }
+    .success { display: none; color: #10b981; font-weight: 600; font-size: 1.2rem; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2 id="title">🎤 Allow Microphone Access</h2>
+    <p id="desc">Setting up your AI Meeting Recorder for the first time! To capture your voice alongside the meeting, we need microphone access.</p>
+    <button id="allowBtn">Request Permission</button>
+    <div id="successMsg" class="success">✅ Permission Granted! You can close this tab.</div>
+  </div>
+
+  <script src="options.js"></script>
+</body>
+</html>

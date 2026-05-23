@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+    :root {
+      --bg: #0b1120;
+      --card: rgba(15, 23, 42, 0.95);
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --border: rgba(255,255,255,0.08);
+      --danger: #ef4444;
+      --success: #10b981;
+      --accent: linear-gradient(135deg, #818cf8, #c084fc);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      width: 320px;
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    /* ── Header ────────────────────────────────────── */
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 16px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .logo {
+      width: 30px; height: 30px;
+      background: var(--accent);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px;
+    }
+    .header-title { font-size: 0.95rem; font-weight: 700; }
+    .header-sub   { font-size: 0.72rem; color: var(--muted); }
+
+    /* ── Body ──────────────────────────────────────── */
+    .body { padding: 16px; }
+
+    /* ── Login ─────────────────────────────────────── */
+    #loginSection p { font-size: 0.82rem; color: var(--muted); margin-bottom: 12px; }
+    input {
+      width: 100%;
+      padding: 9px 12px;
+      margin-bottom: 10px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: white;
+      font-size: 0.88rem;
+      outline: none;
+      transition: border-color .2s;
+    }
+    input:focus { border-color: #818cf8; }
+
+    /* ── Buttons ───────────────────────────────────── */
+    button {
+      width: 100%; padding: 10px 14px;
+      border: none; border-radius: 8px;
+      font-family: inherit; font-weight: 600; font-size: 0.88rem;
+      cursor: pointer; transition: all .2s; color: white;
+    }
+    .btn-primary { background: var(--accent); }
+    .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+
+    .btn-stop {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1.5px solid var(--danger);
+      color: #fca5a5;
+      font-size: 1rem;
+      padding: 14px;
+      margin-top: 4px;
+    }
+    .btn-stop:hover { background: rgba(239, 68, 68, 0.28); transform: translateY(-1px); }
+
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-weight: 500;
+      margin-top: 6px;
+    }
+    .btn-ghost:hover { background: rgba(255,255,255,0.05); }
+
+    /* ── Recording State Card ──────────────────────── */
+    #recordingCard {
+      background: rgba(239, 68, 68, 0.08);
+      border: 1.5px solid rgba(239, 68, 68, 0.35);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .rec-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .rec-dot {
+      width: 11px; height: 11px;
+      background: var(--danger);
+      border-radius: 50%;
+      flex-shrink: 0;
+      animation: blink 1s infinite alternate;
+    }
+    @keyframes blink { from{opacity:1} to{opacity:0.25} }
+    .rec-label { font-weight: 600; color: #fca5a5; font-size: 0.9rem; }
+    .rec-tab { font-size: 0.78rem; color: var(--muted); margin-left: auto; }
+
+    /* ── Detection Banner ──────────────────────────── */
+    #detectedBanner {
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin-bottom: 12px;
+      font-size: 0.82rem;
+      color: #6ee7b7;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* ── Status ────────────────────────────────────── */
+    #status {
+      font-size: 0.8rem;
+      text-align: center;
+      color: var(--muted);
+      margin-top: 10px;
+      min-height: 18px;
+    }
+
+    .hidden { display: none !important; }
+
+    /* ── Divider ───────────────────────────────────── */
+    hr { border: none; border-top: 1px solid var(--border); margin: 12px 0; }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="header">
+    <div class="logo">🎙</div>
+    <div>
+      <div class="header-title">Meeting Recorder</div>
+      <div class="header-sub">AI Meeting Assistant</div>
+    </div>
+  </div>
+
+  <div class="body">
+
+    <!-- Login Section -->
+    <div id="loginSection">
+      <p>Log in to record and upload meetings securely.</p>
+      <input type="email" id="email" placeholder="Email" />
+      <input type="password" id="password" placeholder="Password" />
+      <button id="loginBtn" class="btn-primary">Log In</button>
+    </div>
+
+    <!-- Record Section -->
+    <div id="recordSection" class="hidden">
+
+      <!-- Meeting Detected Banner -->
+      <div id="detectedBanner" class="hidden">
+        <span>✅</span>
+        <span id="detectedText">Meeting Detected — Ready to record</span>
+      </div>
+
+      <!-- Mic indicator (always visible when record section is active) -->
+      <div id="micContainer" style="display:flex; align-items:center; gap:8px; margin-bottom:12px; background:rgba(255,255,255,0.05); padding:8px 12px; border-radius:8px;">
+        <span style="font-size:1.1rem;">🎤</span>
+        <div id="micVisualizerWrapper" style="flex:1; height:6px; background:rgba(255,255,255,0.1); border-radius:4px; overflow:hidden;">
+          <div id="micVolumeBar" style="height:100%; width:0%; background:var(--success); transition:width 0.1s; border-radius:4px;"></div>
+        </div>
+        <button id="allowMicBtn" class="hidden" style="background:#ef4444; color:white; padding:4px 8px; font-size:0.75rem; border:none; border-radius:4px; cursor:pointer;">Fix Microphone</button>
+      </div>
+
+      <!-- Active Recording Card -->
+      <div id="recordingCard" class="hidden">
+        <div class="rec-row">
+          <span class="rec-dot"></span>
+          <span class="rec-label">Recording in progress</span>
+          <span class="rec-tab" id="recTabLabel"></span>
+        </div>
+        <!-- BIG Stop Button inside the card -->
+        <button id="stopBtn" class="btn-stop">⏹ Stop Recording &amp; Upload</button>
+      </div>
+
+      <!-- Idle state -->
+      <div id="idleSection">
+        <input type="text" id="meetingTitle" placeholder="Meeting Title (optional)" />
+        <button id="startBtn" class="btn-primary">▶ Start Recording</button>
+      </div>
+
+      <hr />
+      <button id="logoutBtn" class="btn-ghost">Log Out</button>
+    </div>
+
+    <div id="status"></div>
+
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+flask
+gunicorn
+whisper
+flask-cors
+psycopg2-binary
+PyJWT
+bcrypt
+python-dotenv
+requests
+werkzeug
