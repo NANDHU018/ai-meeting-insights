@@ -13,6 +13,7 @@ connection_pool = pool.ThreadedConnectionPool(
     database=os.getenv("DB_NAME", "ai_meeting"),
     password=os.getenv("DB_PASSWORD", "2063$8069"),
     port=int(os.getenv("DB_PORT", 8000)),
+    sslmode="require"
 )
 
 
