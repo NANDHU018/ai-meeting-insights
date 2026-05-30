@@ -43,7 +43,7 @@ def _process_meeting_in_background(meeting_id, audio_path, user_id):
     """
     try:
         # Update status to transcribing
-        query("UPDATE meetings SET status = 'transcribing' WHERE id = %s::uuid", (meeting_id,))
+        query("UPDATE meetings SET status = 'transcribing' WHERE id = %s", (meeting_id,))
         
         # --- Whisper transcription ---
         filename = os.path.basename(audio_path)
@@ -60,12 +60,12 @@ def _process_meeting_in_background(meeting_id, audio_path, user_id):
 
         # Save transcript
         query(
-            "INSERT INTO transcripts (meeting_id, text) VALUES (%s::uuid, %s)",
+            "INSERT INTO transcripts (meeting_id, text) VALUES (%s, %s)",
             (meeting_id, transcript),
         )
 
         # Update status to generating_title
-        query("UPDATE meetings SET status = 'generating_title' WHERE id = %s::uuid", (meeting_id,))
+        query("UPDATE meetings SET status = 'generating_title' WHERE id = %s", (meeting_id,))
         
         # --- Generate title via Ollama (lightweight, no summary yet) ---
         raw_title = _ollama(
@@ -77,7 +77,7 @@ def _process_meeting_in_background(meeting_id, audio_path, user_id):
 
         # Update meeting status + title
         query(
-            "UPDATE meetings SET status = 'transcribed', title = %s WHERE id = %s::uuid",
+            "UPDATE meetings SET status = 'transcribed', title = %s WHERE id = %s",
             (generated_title, meeting_id),
         )
         print(f"DEBUG: Meeting {meeting_id} processed successfully. Title: {generated_title}")
@@ -86,7 +86,7 @@ def _process_meeting_in_background(meeting_id, audio_path, user_id):
         print(f"ERROR: Processing failed for meeting {meeting_id}: {e}")
         import traceback
         traceback.print_exc()
-        query("UPDATE meetings SET status = 'failed' WHERE id = %s::uuid", (meeting_id,))
+        query("UPDATE meetings SET status = 'failed' WHERE id = %s", (meeting_id,))
     finally:
         # Clean up the audio file after processing (or failure)
         if os.path.exists(audio_path):
@@ -101,16 +101,16 @@ def get_all_meetings():
     print(f"DEBUG: Fetching meetings for user {g.user['id']}")
     try:
         rows = query(
-            """
-            SELECT m.id, m.title, m.status,
-                   TO_CHAR(m.created_at, 'Mon DD, YYYY HH12:MI AM') AS date,
-                   EXISTS (SELECT 1 FROM summaries s WHERE s.meeting_id = m.id) AS summary
-            FROM meetings m
-            WHERE m.user_id = %s::uuid
-            ORDER BY m.created_at DESC
-            """,
-            (g.user["id"],),
-        )
+    """
+    SELECT m.id, m.title, m.status,
+           TO_CHAR(m.created_at, 'Mon DD, YYYY HH12:MI AM') AS date,
+           EXISTS (SELECT 1 FROM summaries s WHERE s.meeting_id = m.id) AS summary
+    FROM meetings m
+    WHERE m.user_id = %s
+    ORDER BY m.created_at DESC
+    """,
+    (g.user["id"],),
+)
         print(f"DEBUG: Found {len(rows)} meetings")
         return jsonify(rows), 200
     except Exception as e:
@@ -126,17 +126,17 @@ def get_all_meetings():
 def get_meeting_by_id(meeting_id):
     meeting_rows = query(
         "SELECT id, title, status, TO_CHAR(created_at, 'Mon DD, YYYY') AS date "
-        "FROM meetings WHERE id = %s::uuid AND user_id = %s::uuid",
+        "FROM meetings WHERE id = %s AND user_id = %s",
         (meeting_id, g.user["id"]),
     )
     if not meeting_rows:
         return jsonify({"error": "Meeting not found"}), 404
 
     transcript_rows = query(
-        "SELECT text FROM transcripts WHERE meeting_id = %s::uuid", (meeting_id,)
+        "SELECT text FROM transcripts WHERE meeting_id = %s", (meeting_id,)
     )
     summary_rows = query(
-        "SELECT summary_text FROM summaries WHERE meeting_id = %s::uuid", (meeting_id,)
+        "SELECT summary_text FROM summaries WHERE meeting_id = %s", (meeting_id,)
     )
 
     m = meeting_rows[0]
@@ -181,7 +181,7 @@ def create_meeting():
         # Insert meeting row immediately with status = 'processing'
         meeting_rows = query(
             "INSERT INTO meetings (user_id, title, audio_url, status) "
-            "VALUES (%s::uuid, %s, %s, %s) RETURNING id",
+            "VALUES (%s, %s, %s, %s) RETURNING id",
             (user_id, "Untitled Meeting", audio_path, "processing"),
         )
         meeting_id = str(meeting_rows[0]["id"])
@@ -218,15 +218,15 @@ def create_meeting():
 def delete_meeting(meeting_id):
     user_id = g.user["id"]
     check = query(
-        "SELECT id FROM meetings WHERE id = %s::uuid AND user_id = %s::uuid",
+        "SELECT id FROM meetings WHERE id = %s AND user_id = %s",
         (meeting_id, user_id),
     )
     if not check:
         return jsonify({"error": "Meeting not found"}), 404
 
-    query("DELETE FROM summaries   WHERE meeting_id = %s::uuid", (meeting_id,))
-    query("DELETE FROM transcripts WHERE meeting_id = %s::uuid", (meeting_id,))
-    query("DELETE FROM meetings    WHERE id = %s::uuid",         (meeting_id,))
+    query("DELETE FROM summaries   WHERE meeting_id = %s", (meeting_id,))
+    query("DELETE FROM transcripts WHERE meeting_id = %s", (meeting_id,))
+    query("DELETE FROM meetings    WHERE id = %s",         (meeting_id,))
     return jsonify({"message": "Meeting deleted successfully"}), 200
 
 
@@ -242,16 +242,16 @@ def bulk_delete_meetings():
         return jsonify({"error": "No meeting IDs provided"}), 400
 
     # Verify ownership — filter to only IDs the user owns
-    placeholders = ",".join(["%s::uuid"] * len(ids))
+    placeholders = ",".join(["%s"] * len(ids))
     check = query(
-        f"SELECT id FROM meetings WHERE id IN ({placeholders}) AND user_id = %s::uuid",
+        f"SELECT id FROM meetings WHERE id IN ({placeholders}) AND user_id = %s",
         (*ids, user_id),
     )
     valid_ids = [row["id"] for row in check]
     if not valid_ids:
         return jsonify({"error": "No valid meetings found to delete"}), 404
 
-    ph = ",".join(["%s::uuid"] * len(valid_ids))
+    ph = ",".join(["%s"] * len(valid_ids))
     query(f"DELETE FROM summaries   WHERE meeting_id IN ({ph})", tuple(valid_ids))
     query(f"DELETE FROM transcripts WHERE meeting_id IN ({ph})", tuple(valid_ids))
     query(f"DELETE FROM meetings    WHERE id IN ({ph})",         tuple(valid_ids))
@@ -269,7 +269,7 @@ def summarize_meeting():
         return jsonify({"error": "meeting_id is required"}), 400
 
     transcript_rows = query(
-        "SELECT text FROM transcripts WHERE meeting_id = %s::uuid", (meeting_id,)
+        "SELECT text FROM transcripts WHERE meeting_id = %s", (meeting_id,)
     )
     if not transcript_rows:
         return jsonify({"error": "No transcript found for this meeting"}), 404
@@ -278,22 +278,22 @@ def summarize_meeting():
     summary    = _ollama(f"Summarize the following meeting transcript:\n{transcript}")
 
     existing = query(
-        "SELECT id FROM summaries WHERE meeting_id = %s::uuid", (meeting_id,)
+        "SELECT id FROM summaries WHERE meeting_id = %s", (meeting_id,)
     )
     if existing:
         query(
-            "UPDATE summaries SET summary_text = %s WHERE meeting_id = %s::uuid",
+            "UPDATE summaries SET summary_text = %s WHERE meeting_id = %s",
             (summary, meeting_id),
         )
     else:
         query(
-            "INSERT INTO summaries (meeting_id, summary_text) VALUES (%s::uuid, %s)",
+            "INSERT INTO summaries (meeting_id, summary_text) VALUES (%s, %s)",
             (meeting_id, summary),
         )
 
     # Mark meeting as fully completed now that summary exists
     query(
-        "UPDATE meetings SET status = 'completed' WHERE id = %s::uuid",
+        "UPDATE meetings SET status = 'completed' WHERE id = %s",
         (meeting_id,),
     )
 
@@ -314,7 +314,7 @@ def query_meeting():
     context = ""
     if meeting_id:
         t_rows = query(
-            "SELECT text FROM transcripts WHERE meeting_id = %s::uuid", (meeting_id,)
+            "SELECT text FROM transcripts WHERE meeting_id = %s", (meeting_id,)
         )
         if t_rows:
             context = f"Meeting Transcript:\n{t_rows[0]['text']}\n\n"
@@ -337,11 +337,11 @@ def update_meeting_title(meeting_id):
         return jsonify({"error": "Title is required"}), 400
 
     check = query(
-        "SELECT id FROM meetings WHERE id = %s::uuid AND user_id = %s::uuid",
+        "SELECT id FROM meetings WHERE id = %s AND user_id = %s",
         (meeting_id, user_id),
     )
     if not check:
         return jsonify({"error": "Meeting not found"}), 404
 
-    query("UPDATE meetings SET title = %s WHERE id = %s::uuid", (title, meeting_id))
+    query("UPDATE meetings SET title = %s WHERE id = %s", (title, meeting_id))
     return jsonify({"message": "Title updated successfully", "title": title}), 200
