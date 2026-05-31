@@ -83,10 +83,13 @@ def _process_meeting_in_background(meeting_id, audio_path, user_id):
         print(f"DEBUG: Meeting {meeting_id} processed successfully. Title: {generated_title}")
 
     except Exception as e:
-        print(f"ERROR: Processing failed for meeting {meeting_id}: {e}")
-        import traceback
-        traceback.print_exc()
-        query("UPDATE meetings SET status = 'failed' WHERE id = %s", (meeting_id,))
+    print(f"ERROR: Processing failed for meeting {meeting_id}: {e}")
+    import traceback
+    traceback.print_exc()
+    query(
+        "UPDATE meetings SET status = 'failed' WHERE id = %s",
+        (meeting_id,)
+    )
     finally:
         # Clean up the audio file after processing (or failure)
         if os.path.exists(audio_path):
